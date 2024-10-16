@@ -3,7 +3,7 @@ getgenv().Aimbot = {
     Keybind  = 'C',
     Hitpart = 'HumanoidRootPart',
     ['Prediction'] = {
-        X = 0.1,  -- Changed starting value to 0.1
+        X = 0.1,
         Y = 0.1,
     },
 }
@@ -17,6 +17,7 @@ end
 local RunService = game:GetService('RunService')
 local Workspace = game:GetService('Workspace')
 local Players = game:GetService('Players')
+local UserInputService = game:GetService("UserInputService")
 
 local LocalPlayer = Players.LocalPlayer
 local Camera = Workspace.CurrentCamera
@@ -26,17 +27,16 @@ local Player = nil -- target player
 
 -- Create GUI
 local ScreenGui = Instance.new("ScreenGui", LocalPlayer.PlayerGui)
-ScreenGui.Enabled = true -- Ensure GUI is visible
+ScreenGui.Enabled = true
 local MenuFrame = Instance.new("Frame")
 MenuFrame.Size = UDim2.new(0, 300, 0, 500)
 MenuFrame.Position = UDim2.new(0.5, -150, 0.5, -250)
 MenuFrame.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
 MenuFrame.BorderSizePixel = 2
-MenuFrame.BorderColor3 = Color3.fromRGB(255, 0, 0) -- Red outline
+MenuFrame.BorderColor3 = Color3.fromRGB(255, 0, 0)
 MenuFrame.AnchorPoint = Vector2.new(0.5, 0.5)
 MenuFrame.Parent = ScreenGui
 
--- Rounded corners for MenuFrame
 local MenuCorner = Instance.new("UICorner", MenuFrame)
 MenuCorner.CornerRadius = UDim.new(0, 15)
 
@@ -45,10 +45,10 @@ local Header = Instance.new("TextLabel", MenuFrame)
 Header.Size = UDim2.new(1, 0, 0, 50)
 Header.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
 Header.Text = "hktjware"
-Header.TextColor3 = Color3.fromRGB(255, 0, 0) -- Red text
+Header.TextColor3 = Color3.fromRGB(255, 0, 0)
 Header.TextScaled = true
 Header.BorderSizePixel = 2
-Header.BorderColor3 = Color3.fromRGB(255, 0, 0) -- Red outline
+Header.BorderColor3 = Color3.fromRGB(255, 0, 0)
 local HeaderCorner = Instance.new("UICorner", Header)
 HeaderCorner.CornerRadius = UDim.new(0, 15)
 
@@ -58,7 +58,7 @@ PredXLabel.Size = UDim2.new(0, 250, 0, 50)
 PredXLabel.Position = UDim2.new(0.5, -125, 0, 60)
 PredXLabel.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
 PredXLabel.Text = "Prediction X"
-PredXLabel.TextColor3 = Color3.fromRGB(255, 0, 0) -- Red text
+PredXLabel.TextColor3 = Color3.fromRGB(255, 0, 0)
 local PredXLabelCorner = Instance.new("UICorner", PredXLabel)
 PredXLabelCorner.CornerRadius = UDim.new(0, 15)
 
@@ -66,11 +66,11 @@ PredXLabelCorner.CornerRadius = UDim.new(0, 15)
 local PredXBox = Instance.new("TextBox", MenuFrame)
 PredXBox.Size = UDim2.new(0, 250, 0, 100)
 PredXBox.Position = UDim2.new(0.5, -125, 0, 110)
-PredXBox.BackgroundColor3 = Color3.fromRGB(30, 30, 30) -- Dark grey
+PredXBox.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 PredXBox.Text = tostring(Aimbot['Prediction'].X)
-PredXBox.TextColor3 = Color3.fromRGB(255, 0, 0) -- Red text
+PredXBox.TextColor3 = Color3.fromRGB(255, 0, 0)
 PredXBox.BorderSizePixel = 2
-PredXBox.BorderColor3 = Color3.fromRGB(255, 0, 0) -- Red outline
+PredXBox.BorderColor3 = Color3.fromRGB(255, 0, 0)
 local PredXBoxCorner = Instance.new("UICorner", PredXBox)
 PredXBoxCorner.CornerRadius = UDim.new(0, 15)
 PredXBox.FocusLost:Connect(function()
@@ -80,22 +80,22 @@ end)
 -- Prediction Y label
 local PredYLabel = Instance.new("TextLabel", MenuFrame)
 PredYLabel.Size = UDim2.new(0, 250, 0, 50)
-PredYLabel.Position = UDim2.new(0.5, -125, 0, 220) -- Below Prediction X box
+PredYLabel.Position = UDim2.new(0.5, -125, 0, 220)
 PredYLabel.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
 PredYLabel.Text = "Prediction Y"
-PredYLabel.TextColor3 = Color3.fromRGB(255, 0, 0) -- Red text
+PredYLabel.TextColor3 = Color3.fromRGB(255, 0, 0)
 local PredYLabelCorner = Instance.new("UICorner", PredYLabel)
 PredYLabelCorner.CornerRadius = UDim.new(0, 15)
 
 -- Prediction Y box
 local PredYBox = Instance.new("TextBox", MenuFrame)
 PredYBox.Size = UDim2.new(0, 250, 0, 100)
-PredYBox.Position = UDim2.new(0.5, -125, 0, 270) -- Below Prediction Y label
-PredYBox.BackgroundColor3 = Color3.fromRGB(30, 30, 30) -- Dark grey
+PredYBox.Position = UDim2.new(0.5, -125, 0, 270)
+PredYBox.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 PredYBox.Text = tostring(Aimbot['Prediction'].Y)
-PredYBox.TextColor3 = Color3.fromRGB(255, 0, 0) -- Red text
+PredYBox.TextColor3 = Color3.fromRGB(255, 0, 0)
 PredYBox.BorderSizePixel = 2
-PredYBox.BorderColor3 = Color3.fromRGB(255, 0, 0) -- Red outline
+PredYBox.BorderColor3 = Color3.fromRGB(255, 0, 0)
 local PredYBoxCorner = Instance.new("UICorner", PredYBox)
 PredYBoxCorner.CornerRadius = UDim.new(0, 15)
 PredYBox.FocusLost:Connect(function()
@@ -105,26 +105,26 @@ end)
 -- Keybind label
 local KeybindLabel = Instance.new("TextLabel", MenuFrame)
 KeybindLabel.Size = UDim2.new(0, 250, 0, 30)
-KeybindLabel.Position = UDim2.new(0.5, -125, 0, 390) -- Below Prediction Y box
+KeybindLabel.Position = UDim2.new(0.5, -125, 0, 390)
 KeybindLabel.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
 KeybindLabel.Text = "Keybind"
-KeybindLabel.TextColor3 = Color3.fromRGB(255, 0, 0) -- Red text
+KeybindLabel.TextColor3 = Color3.fromRGB(255, 0, 0)
 local KeybindLabelCorner = Instance.new("UICorner", KeybindLabel)
 KeybindLabelCorner.CornerRadius = UDim.new(0, 15)
 
 -- Keybind box
 local KeybindBox = Instance.new("TextBox", MenuFrame)
 KeybindBox.Size = UDim2.new(0, 250, 0, 50)
-KeybindBox.Position = UDim2.new(0.5, -125, 0, 430) -- Below Keybind label
-KeybindBox.BackgroundColor3 = Color3.fromRGB(30, 30, 30) -- Dark grey
+KeybindBox.Position = UDim2.new(0.5, -125, 0, 430)
+KeybindBox.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 KeybindBox.Text = Aimbot.Keybind
-KeybindBox.TextColor3 = Color3.fromRGB(255, 0, 0) -- Red text
+KeybindBox.TextColor3 = Color3.fromRGB(255, 0, 0)
 KeybindBox.BorderSizePixel = 2
-KeybindBox.BorderColor3 = Color3.fromRGB(255, 0, 0) -- Red outline
+KeybindBox.BorderColor3 = Color3.fromRGB(255, 0, 0)
 local KeybindBoxCorner = Instance.new("UICorner", KeybindBox)
 KeybindBoxCorner.CornerRadius = UDim.new(0, 15)
 KeybindBox.FocusLost:Connect(function()
-    Aimbot.Keybind = KeybindBox.Text:upper() -- Convert to uppercase
+    Aimbot.Keybind = KeybindBox.Text:upper()
 end)
 
 -- Make GUI draggable
@@ -160,14 +160,13 @@ local function toggleGUI()
 end
 
 -- Bind toggle to Right Control key
-UserInputService = game:GetService("UserInputService")
 UserInputService.InputBegan:Connect(function(input)
     if input.KeyCode == Enum.KeyCode.RightControl then
         toggleGUI()
     end
 end)
 
-local GetClosestPlayer = function() -- Optimized GetClosestPlayer
+local GetClosestPlayer = function()
     local ClosestDistance, ClosestPlayer = 100000, nil
     for _, Player : Player in pairs(Players:GetPlayers()) do
         if Player.Name ~= LocalPlayer.Name and Player.Character and Player.Character:FindFirstChild('HumanoidRootPart') then
@@ -185,7 +184,7 @@ local GetClosestPlayer = function() -- Optimized GetClosestPlayer
     return ClosestPlayer
 end
 
-Mouse.KeyDown:Connect(function(key) -- Get closest player (toggle)
+Mouse.KeyDown:Connect(function(key)
     if key == Aimbot.Keybind:lower() then
         Player = not Player and GetClosestPlayer() or nil
     end
@@ -198,6 +197,14 @@ RunService.RenderStepped:Connect(function()
     if not Aimbot.Status then
         return
     end
+
+    -- Check if the target player is dead
+    local humanoid = Player.Character:FindFirstChildOfClass('Humanoid')
+    if humanoid and humanoid.Health <= 0 then
+        Player = nil -- Stop aiming if the target is dead
+        return
+    end
+
     local Hitpart = Player.Character:FindFirstChild(Aimbot.Hitpart)
     if not Hitpart then
         return
