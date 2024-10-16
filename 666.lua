@@ -1,41 +1,32 @@
-getgenv().Aimbot = {
-    Status = true,
-    Keybind  = 'C',
-    Hitpart = 'HumanoidRootPart',
-    ['Prediction'] = {
-        X = 0.1,
-        Y = 0.1,
-    },
+getgenv().AimAssist = { 
+    Status = false, 
+    Keybind = 'C', 
+    Hitpart = 'HumanoidRootPart', 
+    ['Prediction'] = { X = 0.1, Y = 0.1 },
+    Smoothness = 0.06
 }
 
-if getgenv().AimbotRan then
-    return
-else
-    getgenv().AimbotRan = true
-end
+if getgenv().AimAssistRan then return else getgenv().AimAssistRan = true end
 
 local RunService = game:GetService('RunService')
 local Workspace = game:GetService('Workspace')
 local Players = game:GetService('Players')
 local UserInputService = game:GetService("UserInputService")
-
 local LocalPlayer = Players.LocalPlayer
 local Camera = Workspace.CurrentCamera
 local Mouse = LocalPlayer:GetMouse()
-
-local Player = nil -- target player
+local TargetPlayer = nil
 
 -- Create GUI
 local ScreenGui = Instance.new("ScreenGui", LocalPlayer.PlayerGui)
 ScreenGui.Enabled = true
-local MenuFrame = Instance.new("Frame")
+local MenuFrame = Instance.new("Frame", ScreenGui)
 MenuFrame.Size = UDim2.new(0, 300, 0, 500)
 MenuFrame.Position = UDim2.new(0.5, -150, 0.5, -250)
-MenuFrame.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+MenuFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0) -- Changed to black
 MenuFrame.BorderSizePixel = 2
 MenuFrame.BorderColor3 = Color3.fromRGB(255, 0, 0)
 MenuFrame.AnchorPoint = Vector2.new(0.5, 0.5)
-MenuFrame.Parent = ScreenGui
 
 local MenuCorner = Instance.new("UICorner", MenuFrame)
 MenuCorner.CornerRadius = UDim.new(0, 15)
@@ -43,102 +34,73 @@ MenuCorner.CornerRadius = UDim.new(0, 15)
 -- Header
 local Header = Instance.new("TextLabel", MenuFrame)
 Header.Size = UDim2.new(1, 0, 0, 50)
-Header.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+Header.BackgroundColor3 = Color3.fromRGB(0, 0, 0) -- Background color black
 Header.Text = "hktjware"
-Header.TextColor3 = Color3.fromRGB(255, 0, 0)
+Header.TextColor3 = Color3.fromRGB(255, 0, 0) -- Header text color red
 Header.TextScaled = true
-Header.BorderSizePixel = 2
-Header.BorderColor3 = Color3.fromRGB(255, 0, 0)
+Header.BorderSizePixel = 0 -- Removed the border
 local HeaderCorner = Instance.new("UICorner", Header)
 HeaderCorner.CornerRadius = UDim.new(0, 15)
 
--- Prediction X label
-local PredXLabel = Instance.new("TextLabel", MenuFrame)
-PredXLabel.Size = UDim2.new(0, 250, 0, 50)
-PredXLabel.Position = UDim2.new(0.5, -125, 0, 60)
-PredXLabel.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
-PredXLabel.Text = "Prediction X"
-PredXLabel.TextColor3 = Color3.fromRGB(255, 0, 0)
-local PredXLabelCorner = Instance.new("UICorner", PredXLabel)
-PredXLabelCorner.CornerRadius = UDim.new(0, 15)
+-- Create UI elements function
+local function createUIElement(elementType, parent, size, position, text)
+    local element = Instance.new(elementType, parent)
+    element.Size = size
+    element.Position = position
+    element.BackgroundColor3 = Color3.fromRGB(0, 0, 0) -- Background color black
+    element.Text = text
+    element.TextColor3 = Color3.fromRGB(255, 0, 0)
+    local corner = Instance.new("UICorner", element)
+    corner.CornerRadius = UDim.new(0, 15)
+    return element
+end
 
--- Prediction X box
-local PredXBox = Instance.new("TextBox", MenuFrame)
-PredXBox.Size = UDim2.new(0, 250, 0, 100)
-PredXBox.Position = UDim2.new(0.5, -125, 0, 110)
-PredXBox.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-PredXBox.Text = tostring(Aimbot['Prediction'].X)
-PredXBox.TextColor3 = Color3.fromRGB(255, 0, 0)
-PredXBox.BorderSizePixel = 2
-PredXBox.BorderColor3 = Color3.fromRGB(255, 0, 0)
-local PredXBoxCorner = Instance.new("UICorner", PredXBox)
-PredXBoxCorner.CornerRadius = UDim.new(0, 15)
-PredXBox.FocusLost:Connect(function()
-    Aimbot['Prediction'].X = tonumber(PredXBox.Text) or Aimbot['Prediction'].X
-end)
+local function createTextBox(parent, position, defaultText, callback)
+    local box = Instance.new("TextBox", parent)
+    box.Size = UDim2.new(0, 250, 0, 30)
+    box.Position = position
+    box.BackgroundColor3 = Color3.fromRGB(0, 0, 0) -- Background color black
+    box.Text = defaultText
+    box.TextColor3 = Color3.fromRGB(255, 0, 0)
+    box.BorderSizePixel = 0 -- Removed the border
+    box.ClearTextOnFocus = false -- Prevent text clearing on focus
 
--- Prediction Y label
-local PredYLabel = Instance.new("TextLabel", MenuFrame)
-PredYLabel.Size = UDim2.new(0, 250, 0, 50)
-PredYLabel.Position = UDim2.new(0.5, -125, 0, 220)
-PredYLabel.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
-PredYLabel.Text = "Prediction Y"
-PredYLabel.TextColor3 = Color3.fromRGB(255, 0, 0)
-local PredYLabelCorner = Instance.new("UICorner", PredYLabel)
-PredYLabelCorner.CornerRadius = UDim.new(0, 15)
+    local corner = Instance.new("UICorner", box) -- Rounded edges
+    corner.CornerRadius = UDim.new(0, 15)
 
--- Prediction Y box
-local PredYBox = Instance.new("TextBox", MenuFrame)
-PredYBox.Size = UDim2.new(0, 250, 0, 100)
-PredYBox.Position = UDim2.new(0.5, -125, 0, 270)
-PredYBox.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-PredYBox.Text = tostring(Aimbot['Prediction'].Y)
-PredYBox.TextColor3 = Color3.fromRGB(255, 0, 0)
-PredYBox.BorderSizePixel = 2
-PredYBox.BorderColor3 = Color3.fromRGB(255, 0, 0)
-local PredYBoxCorner = Instance.new("UICorner", PredYBox)
-PredYBoxCorner.CornerRadius = UDim.new(0, 15)
-PredYBox.FocusLost:Connect(function()
-    Aimbot['Prediction'].Y = tonumber(PredYBox.Text) or Aimbot['Prediction'].Y
-end)
+    box.FocusLost:Connect(function()
+        callback(tonumber(box.Text) or box.Text)
+    end)
+    return box
+end
 
--- Keybind label
-local KeybindLabel = Instance.new("TextLabel", MenuFrame)
-KeybindLabel.Size = UDim2.new(0, 250, 0, 30)
-KeybindLabel.Position = UDim2.new(0.5, -125, 0, 390)
-KeybindLabel.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
-KeybindLabel.Text = "Keybind"
-KeybindLabel.TextColor3 = Color3.fromRGB(255, 0, 0)
-local KeybindLabelCorner = Instance.new("UICorner", KeybindLabel)
-KeybindLabelCorner.CornerRadius = UDim.new(0, 15)
+-- UI Elements
+local PredXLabel = createUIElement("TextLabel", MenuFrame, UDim2.new(0, 250, 0, 30), UDim2.new(0.5, -125, 0, 60), "Prediction X")
+local PredXBox = createTextBox(MenuFrame, UDim2.new(0.5, -125, 0, 90), tostring(AimAssist['Prediction'].X), function(value) AimAssist['Prediction'].X = value end)
 
--- Keybind box
-local KeybindBox = Instance.new("TextBox", MenuFrame)
-KeybindBox.Size = UDim2.new(0, 250, 0, 50)
-KeybindBox.Position = UDim2.new(0.5, -125, 0, 430)
-KeybindBox.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-KeybindBox.Text = Aimbot.Keybind
-KeybindBox.TextColor3 = Color3.fromRGB(255, 0, 0)
-KeybindBox.BorderSizePixel = 2
-KeybindBox.BorderColor3 = Color3.fromRGB(255, 0, 0)
-local KeybindBoxCorner = Instance.new("UICorner", KeybindBox)
-KeybindBoxCorner.CornerRadius = UDim.new(0, 15)
-KeybindBox.FocusLost:Connect(function()
-    Aimbot.Keybind = KeybindBox.Text:upper()
-end)
+local PredYLabel = createUIElement("TextLabel", MenuFrame, UDim2.new(0, 250, 0, 30), UDim2.new(0.5, -125, 0, 130), "Prediction Y")
+local PredYBox = createTextBox(MenuFrame, UDim2.new(0.5, -125, 0, 170), tostring(AimAssist['Prediction'].Y), function(value) AimAssist['Prediction'].Y = value end)
+
+local SmoothnessLabel = createUIElement("TextLabel", MenuFrame, UDim2.new(0, 250, 0, 30), UDim2.new(0.5, -125, 0, 210), "Smoothness")
+local SmoothnessBox = createTextBox(MenuFrame, UDim2.new(0.5, -125, 0, 250), tostring(AimAssist.Smoothness), function(value) AimAssist.Smoothness = value end)
+
+local KeybindLabel = createUIElement("TextLabel", MenuFrame, UDim2.new(0, 250, 0, 30), UDim2.new(0.5, -125, 0, 290), "Keybind")
+local KeybindBox = createTextBox(MenuFrame, UDim2.new(0.5, -125, 0, 330), AimAssist.Keybind, function(value) AimAssist.Keybind = value:upper() end)
+
+-- Credits Labels with space
+local CreditsLabel = createUIElement("TextLabel", MenuFrame, UDim2.new(0, 250, 0, 30), UDim2.new(0.5, -125, 0, 370), "Credits")
+local HKTJLabel = createUIElement("TextLabel", MenuFrame, UDim2.new(0, 250, 0, 30), UDim2.new(0.5, -125, 0, 410), "@hktj")
 
 -- Make GUI draggable
-local dragging
-local dragInput
-local dragStart
-local startPos
+local dragging = false
+local dragStart = Vector2.new(0, 0)
+local startPos = Vector2.new(0, 0)
 
 MenuFrame.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 then
         dragging = true
         dragStart = input.Position
         startPos = MenuFrame.Position
-
         input.Changed:Connect(function()
             if input.UserInputState == Enum.UserInputState.End then
                 dragging = false
@@ -167,17 +129,15 @@ UserInputService.InputBegan:Connect(function(input)
 end)
 
 local GetClosestPlayer = function()
-    local ClosestDistance, ClosestPlayer = 100000, nil
-    for _, Player : Player in pairs(Players:GetPlayers()) do
-        if Player.Name ~= LocalPlayer.Name and Player.Character and Player.Character:FindFirstChild('HumanoidRootPart') then
+    local ClosestDistance, ClosestPlayer = math.huge, nil
+    for _, Player in pairs(Players:GetPlayers()) do
+        if Player ~= LocalPlayer and Player.Character and Player.Character:FindFirstChild('HumanoidRootPart') then
             local Root, Visible = Camera:WorldToScreenPoint(Player.Character.HumanoidRootPart.Position)
-            if not Visible then
-                continue
-            end
-            Root = (Vector2.new(Mouse.X, Mouse.Y) - Vector2.new(Root.X, Root.Y)).Magnitude
-            if Root < ClosestDistance then
-                ClosestPlayer = Player
-                ClosestDistance = Root
+            if not Visible then continue end
+            local distance = (Vector2.new(Mouse.X, Mouse.Y) - Vector2.new(Root.X, Root.Y)).Magnitude
+            if distance < ClosestDistance then
+                ClosestPlayer = Player 
+                ClosestDistance = distance
             end
         end
     end
@@ -185,29 +145,28 @@ local GetClosestPlayer = function()
 end
 
 Mouse.KeyDown:Connect(function(key)
-    if key == Aimbot.Keybind:lower() then
-        Player = not Player and GetClosestPlayer() or nil
+    if key == AimAssist.Keybind:lower() then
+        AimAssist.Status = not AimAssist.Status
+        TargetPlayer = AimAssist.Status and GetClosestPlayer() or nil
     end
 end)
 
 RunService.RenderStepped:Connect(function()
-    if not Player then
-        return
-    end
-    if not Aimbot.Status then
-        return
+    if not AimAssist.Status or not TargetPlayer then return end
+
+    local humanoid = TargetPlayer.Character:FindFirstChildOfClass('Humanoid')
+    if humanoid and humanoid.Health <= 0 then 
+        TargetPlayer = nil -- Stop aiming if the target is dead
+        return 
     end
 
-    -- Check if the target player is dead
-    local humanoid = Player.Character:FindFirstChildOfClass('Humanoid')
-    if humanoid and humanoid.Health <= 0 then
-        Player = nil -- Stop aiming if the target is dead
-        return
-    end
+    local Hitpart = TargetPlayer.Character:FindFirstChild(AimAssist.Hitpart)
+    if not Hitpart then return end
 
-    local Hitpart = Player.Character:FindFirstChild(Aimbot.Hitpart)
-    if not Hitpart then
-        return
-    end
-    Camera.CFrame = CFrame.new(Camera.CFrame.Position, Hitpart.Position + Hitpart.Velocity * Vector3.new(Aimbot.Prediction.X, Aimbot.Prediction.Y, Aimbot.Prediction.X))
+    local aimPosition = Hitpart.Position + Hitpart.Velocity * Vector3.new(AimAssist.Prediction.X, AimAssist.Prediction.Y, AimAssist.Prediction.X)
+
+    -- Smoothly adjust the camera CFrame
+    local currentCFrame = Camera.CFrame
+    local targetCFrame = CFrame.new(currentCFrame.Position, aimPosition)
+    Camera.CFrame = currentCFrame:Lerp(targetCFrame, AimAssist.Smoothness)
 end)
