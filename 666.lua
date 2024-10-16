@@ -1,12 +1,13 @@
-getgenv().AimAssist = { 
+getgenv().Aimbot = { 
     Status = false, 
     Keybind = 'C', 
     Hitpart = 'HumanoidRootPart', 
     ['Prediction'] = { X = 0.1, Y = 0.1 },
-    Smoothness = 0.06
+    Smoothness = 0.2, 
+    Fov = 100 
 }
 
-if getgenv().AimAssistRan then return else getgenv().AimAssistRan = true end
+if getgenv().AimbotRan then return else getgenv().AimbotRan = true end
 
 local RunService = game:GetService('RunService')
 local Workspace = game:GetService('Workspace')
@@ -14,7 +15,6 @@ local Players = game:GetService('Players')
 local UserInputService = game:GetService("UserInputService")
 local LocalPlayer = Players.LocalPlayer
 local Camera = Workspace.CurrentCamera
-local Mouse = LocalPlayer:GetMouse()
 local TargetPlayer = nil
 
 -- Create GUI
@@ -34,7 +34,7 @@ MenuCorner.CornerRadius = UDim.new(0, 15)
 local Header = Instance.new("TextLabel", MenuFrame)
 Header.Size = UDim2.new(1, 0, 0, 50)
 Header.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-Header.Text = "hktjware"
+Header.Text = "hktjware" -- Changed header text
 Header.TextColor3 = Color3.fromRGB(255, 0, 0)
 Header.TextScaled = true
 Header.BorderSizePixel = 0
@@ -76,39 +76,27 @@ end
 
 -- Create UI Elements
 local PredXLabel = createUIElement("TextLabel", MenuFrame, UDim2.new(0, 250, 0, 30), UDim2.new(0.5, -125, 0, 60), "Prediction X")
-local PredXBox = createTextBox(MenuFrame, UDim2.new(0.5, -125, 0, 90), tostring(AimAssist['Prediction'].X), function(value) AimAssist['Prediction'].X = value end)
+local PredXBox = createTextBox(MenuFrame, UDim2.new(0.5, -125, 0, 90), tostring(Aimbot['Prediction'].X), function(value) Aimbot['Prediction'].X = value end)
 
 local PredYLabel = createUIElement("TextLabel", MenuFrame, UDim2.new(0, 250, 0, 30), UDim2.new(0.5, -125, 0, 130), "Prediction Y")
-local PredYBox = createTextBox(MenuFrame, UDim2.new(0.5, -125, 0, 170), tostring(AimAssist['Prediction'].Y), function(value) AimAssist['Prediction'].Y = value end)
+local PredYBox = createTextBox(MenuFrame, UDim2.new(0.5, -125, 0, 170), tostring(Aimbot['Prediction'].Y), function(value) Aimbot['Prediction'].Y = value end)
 
 local SmoothnessLabel = createUIElement("TextLabel", MenuFrame, UDim2.new(0, 250, 0, 30), UDim2.new(0.5, -125, 0, 210), "Smoothness")
-local SmoothnessBox = createTextBox(MenuFrame, UDim2.new(0.5, -125, 0, 250), tostring(AimAssist.Smoothness), function(value) AimAssist.Smoothness = value end)
+local SmoothnessBox = createTextBox(MenuFrame, UDim2.new(0.5, -125, 0, 250), tostring(Aimbot.Smoothness), function(value) Aimbot.Smoothness = value end)
 
-local KeybindLabel = createUIElement("TextLabel", MenuFrame, UDim2.new(0, 250, 0, 30), UDim2.new(0.5, -125, 0, 290), "Keybind")
-local KeybindBox = createTextBox(MenuFrame, UDim2.new(0.5, -125, 0, 330), AimAssist.Keybind, function(value) AimAssist.Keybind = value:upper() end)
+-- New FOV Elements
+local FovLabel = createUIElement("TextLabel", MenuFrame, UDim2.new(0, 250, 0, 30), UDim2.new(0.5, -125, 0, 290), "FOV")
+local FovBox = createTextBox(MenuFrame, UDim2.new(0.5, -125, 0, 330), tostring(Aimbot.Fov), function(value) Aimbot.Fov = value end)
 
--- Credits Labels
-local CreditsLabel = createUIElement("TextLabel", MenuFrame, UDim2.new(0, 250, 0, 30), UDim2.new(0.5, -125, 0, 370), "Credits")
-local HKTJLabel = createUIElement("TextLabel", MenuFrame, UDim2.new(0, 250, 0, 30), UDim2.new(0.5, -125, 0, 410), "@hktj")
+-- Keybind Elements moved below FOV
+local KeybindLabel = createUIElement("TextLabel", MenuFrame, UDim2.new(0, 250, 0, 30), UDim2.new(0.5, -125, 0, 370), "Keybind")
+local KeybindBox = createTextBox(MenuFrame, UDim2.new(0.5, -125, 0, 410), Aimbot.Keybind, function(value) Aimbot.Keybind = value:upper() end)
 
--- Add logo
-local LogoLeft = Instance.new("ImageLabel", MenuFrame)
-LogoLeft.Size = UDim2.new(0, 50, 0, 50)
-LogoLeft.Position = UDim2.new(0, 10, 1, -60)
-LogoLeft.Image = "rbxassetid://123458049708007"
-LogoLeft.BackgroundTransparency = 1
-LogoLeft.ImageTransparency = 0
-LogoLeft.ZIndex = 10
+-- Credits Labels moved to the bottom
+local CreditsLabel = createUIElement("TextLabel", MenuFrame, UDim2.new(0, 250, 0, 30), UDim2.new(0.5, -125, 1, -60), "Credits")
+local HKTJLabel = createUIElement("TextLabel", MenuFrame, UDim2.new(0, 250, 0, 30), UDim2.new(0.5, -125, 1, -30), "@hktj")
 
-local LogoRight = Instance.new("ImageLabel", MenuFrame)
-LogoRight.Size = UDim2.new(0, 50, 0, 50)
-LogoRight.Position = UDim2.new(1, -60, 1, -60)
-LogoRight.Image = "rbxassetid://123458049708007"
-LogoRight.BackgroundTransparency = 1
-LogoRight.ImageTransparency = 0
-LogoRight.ZIndex = 10
-
--- Function to check if target is visible
+-- Function to check if target is visible and within FOV
 local function isVisible(target)
     local character = target.Character
     local rootPart = character and character:FindFirstChild('HumanoidRootPart')
@@ -120,56 +108,49 @@ local function isVisible(target)
     return not hitPart or hitPart:IsDescendantOf(character)
 end
 
-local GetClosestPlayer = function()
-    local ClosestDistance, ClosestPlayer = math.huge, nil
-    for _, Player in pairs(Players:GetPlayers()) do
-        if Player ~= LocalPlayer and Player.Character and Player.Character:FindFirstChild('HumanoidRootPart') then
-            if isVisible(Player) then
-                local Root, Visible = Camera:WorldToScreenPoint(Player.Character.HumanoidRootPart.Position)
-                if not Visible then continue end
-                local distance = (Vector2.new(Mouse.X, Mouse.Y) - Vector2.new(Root.X, Root.Y)).Magnitude
-                if distance < ClosestDistance then
-                    ClosestPlayer = Player 
-                    ClosestDistance = distance
-                end
-            end
-        end
-    end
-    return ClosestPlayer
+local function isInFOV(target)
+    local targetPosition = target.Character.HumanoidRootPart.Position
+    local direction = (targetPosition - Camera.CFrame.Position).unit
+    local dotProduct = direction:Dot(Camera.CFrame.LookVector)
+
+    return dotProduct > math.cos(math.rad(Aimbot.Fov / 2))
 end
 
-Mouse.KeyDown:Connect(function(key)
-    if key == AimAssist.Keybind:lower() then
-        AimAssist.Status = not AimAssist.Status
-        TargetPlayer = AimAssist.Status and GetClosestPlayer() or nil
+UserInputService.InputBegan:Connect(function(input, gameProcessedEvent)
+    if input.KeyCode == Enum.KeyCode[Aimbot.Keybind] and not gameProcessedEvent then
+        Aimbot.Status = not Aimbot.Status
+        TargetPlayer = Aimbot.Status and nil
     end
 end)
 
 RunService.RenderStepped:Connect(function()
-    if not AimAssist.Status or not TargetPlayer or not isVisible(TargetPlayer) then return end
-
-    local humanoid = TargetPlayer.Character:FindFirstChildOfClass('Humanoid')
-    if humanoid and humanoid.Health <= 0 then 
-        TargetPlayer = nil -- Stop aiming if the target is dead
-        return 
+    if Aimbot.Status then
+        for _, Player in pairs(Players:GetPlayers()) do
+            if Player ~= LocalPlayer and Player.Character and Player.Character:FindFirstChild('HumanoidRootPart') then
+                if isVisible(Player) and isInFOV(Player) then
+                    TargetPlayer = Player
+                    break
+                end
+            end
+        end
     end
 
-    local Hitpart = TargetPlayer.Character:FindFirstChild(AimAssist.Hitpart)
-    if not Hitpart then return end
+    if not Aimbot.Status or not TargetPlayer or not isVisible(TargetPlayer) then return end
 
-    local aimPosition = Hitpart.Position + Hitpart.Velocity * Vector3.new(AimAssist.Prediction.X, AimAssist.Prediction.Y, AimAssist.Prediction.X)
+    local aimPosition = TargetPlayer.Character[Aimbot.Hitpart].Position + TargetPlayer.Character[Aimbot.Hitpart].Velocity * Vector3.new(Aimbot.Prediction.X, Aimbot.Prediction.Y, Aimbot.Prediction.X)
 
-    -- Smoothly adjust the camera CFrame
+    local randomOffset = Vector3.new(math.random(-1, 1) * 0.05, math.random(-1, 1) * 0.05, 0)
+    aimPosition = aimPosition + randomOffset
+
     local currentCFrame = Camera.CFrame
     local targetCFrame = CFrame.new(currentCFrame.Position, aimPosition)
-    Camera.CFrame = currentCFrame:Lerp(targetCFrame, AimAssist.Smoothness) -- Smoothness set by GUI
+    Camera.CFrame = currentCFrame:Lerp(targetCFrame, Aimbot.Smoothness)
 end)
 
 -- Make GUI draggable
 local dragging, dragInput, dragStart, startPos
 MenuFrame.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum
-.UserInputType.MouseButton1 then
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
         dragging = true
         dragStart = input.Position
         startPos = MenuFrame.Position
